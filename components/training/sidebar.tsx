@@ -10,6 +10,8 @@ interface SidebarProps {
   items: NavItem[]
   className?: string
   onNavigate?: (href: string) => void
+  collapsed: boolean
+  onToggleCollapse: () => void
 }
 
 const iconMap: Record<string, React.ElementType> = {
@@ -20,8 +22,7 @@ const iconMap: Record<string, React.ElementType> = {
   '#layouts': Layers,
 }
 
-export function Sidebar({ items, className, onNavigate }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false)
+export function Sidebar({ items, className, onNavigate, collapsed, onToggleCollapse }: SidebarProps) {
   const [activeHref, setActiveHref] = useState(items.find(i => i.active)?.href || items[0]?.href)
   
   const handleClick = (href: string) => {
@@ -42,7 +43,7 @@ export function Sidebar({ items, className, onNavigate }: SidebarProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={onToggleCollapse}
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </Button>
