@@ -46,3 +46,19 @@ export interface Component {
   difficulty: 'iniciante' | 'intermediario' | 'avancado'
   codeExample?: string
 }
+
+export interface Order {
+  id: string
+  customer: string
+  email: string
+  avatar?: string
+  amount: number
+  status: 'Paid' | 'Due' | 'Canceled'
+  date: string
+}
+
+export interface ChartDataPoint {
+  name: string
+  sales: number
+  visitors: number
+}

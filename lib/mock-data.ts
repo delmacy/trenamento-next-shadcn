@@ -159,3 +159,100 @@ export const mockComponents: Component[] = [
     difficulty: 'iniciante',
   },
 ]
+
+export const dashboardData = {
+  stats: [
+    {
+      id: 'stat-1',
+      label: 'Vendas',
+      value: 'R$ 45.231,89',
+      change: 20.1,
+      trend: 'up',
+      icon: 'trending',
+      color: 'indigo'
+    },
+    {
+      id: 'stat-2',
+      label: 'Ganhos',
+      value: 'R$ 12.053,41',
+      change: 15.2,
+      trend: 'up',
+      icon: 'folder',
+      color: 'green'
+    },
+    {
+      id: 'stat-3',
+      label: 'Visitantes',
+      value: '2.405',
+      change: -4.3,
+      trend: 'down',
+      icon: 'users',
+      color: 'yellow'
+    },
+    {
+      id: 'stat-4',
+      label: 'Pedidos',
+      value: '456',
+      change: 8.4,
+      trend: 'up',
+      icon: 'clock',
+      color: 'red'
+    }
+  ] as (Statistic & { color?: string })[],
+  recentOrders: [
+    {
+      id: 'ORD-001',
+      customer: 'João Silva',
+      email: 'joao.silva@exemplo.com',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Joao',
+      amount: 1500.00,
+      status: 'Paid',
+      date: '2024-05-10',
+    },
+    {
+      id: 'ORD-002',
+      customer: 'Maria Fernanda',
+      email: 'maria.f@exemplo.com',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=MariaF',
+      amount: 3450.50,
+      status: 'Due',
+      date: '2024-05-09',
+    },
+    {
+      id: 'ORD-003',
+      customer: 'Carlos Andrade',
+      email: 'carlos.a@exemplo.com',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CarlosA',
+      amount: 250.00,
+      status: 'Canceled',
+      date: '2024-05-08',
+    },
+    {
+      id: 'ORD-004',
+      customer: 'Ana Costa',
+      email: 'ana.costa@exemplo.com',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=AnaC',
+      amount: 4500.00,
+      status: 'Paid',
+      date: '2024-05-08',
+    },
+    {
+      id: 'ORD-005',
+      customer: 'Pedro Santos',
+      email: 'pedro.s@exemplo.com',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=PedroS',
+      amount: 120.00,
+      status: 'Paid',
+      date: '2024-05-07',
+    }
+  ] as import('@/types').Order[],
+  chartData: [
+    { name: 'Jan', sales: 4000, visitors: 2400 },
+    { name: 'Fev', sales: 3000, visitors: 1398 },
+    { name: 'Mar', sales: 2000, visitors: 9800 },
+    { name: 'Abr', sales: 2780, visitors: 3908 },
+    { name: 'Mai', sales: 1890, visitors: 4800 },
+    { name: 'Jun', sales: 2390, visitors: 3800 },
+    { name: 'Jul', sales: 3490, visitors: 4300 },
+  ] as import('@/types').ChartDataPoint[]
+}

@@ -1,202 +1,223 @@
 'use client'
 
-import { useState } from 'react'
+import * as React from 'react'
 import {
-  StatCard,
-  UserCard,
-  ProjectCard,
-  ComponentCard,
-  SectionTitle,
-  DataTable,
-  CodeBlock
-} from '@/components/training'
-import {
-  mockUsers,
-  mockProjects,
-  mockStatistics,
-  mockComponents
-} from '@/lib/mock-data'
-import { Button } from '@/components/ui/button'
-import { Grid3X3, List } from 'lucide-react'
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis
+} from 'recharts'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { StatCard } from '@/components/training/stat-card'
+import { DataTable, ColumnDef } from '@/components/training/data-table'
+import { dashboardData } from '@/lib/mock-data'
+import { Order } from '@/types'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { cn } from '@/lib/utils'
 
-const exampleCode = `// Exemplo de componentização
-interface UserCardProps {
-  user: User
-  variant?: 'default' | 'compact'
-}
-
-export function UserCard({ user, variant = 'default' }: UserCardProps) {
-  return (
-    <div className="p-6 rounded-xl border bg-card">
-      <img src={user.avatar} alt={user.name} />
-      <h3>{user.name}</h3>
-      <p>{user.email}</p>
-    </div>
-  )
-}`
-
-export default function TrainingPage() {
-  const [userCardVariant, setUserCardVariant] = useState<'default' | 'compact'>('default')
-
-  return (
-    <div className="max-w-6xl mx-auto space-y-12">
-
-      {/* Overview Section */}
-      <section id="overview">
-        <SectionTitle
-          title="Visão Geral"
-          description="Métricas e estatísticas do sistema"
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {mockStatistics.map((stat) => (
-            <StatCard key={stat.id} stat={stat} />
-          ))}
+// Orders columns configuration
+const orderColumns: ColumnDef<Order>[] = [
+  {
+    header: 'Cliente',
+    accessorKey: 'customer',
+    sortable: true,
+    cell: (order) => (
+      <div className="flex items-center gap-3">
+        <Avatar className="h-8 w-8 border">
+          <AvatarImage src={order.avatar} alt={order.customer} />
+          <AvatarFallback>{order.customer.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col">
+          <span className="font-medium">{order.customer}</span>
+          <span className="text-xs text-muted-foreground">{order.email}</span>
         </div>
-      </section>
+      </div>
+    )
+  },
+  {
+    header: 'Data',
+    accessorKey: 'date',
+    sortable: true,
+    cell: (order) => (
+      <span className="text-sm text-muted-foreground">
+        {order.date.split('-').reverse().join('/')}
+      </span>
+    )
+  },
+  {
+    header: 'Valor',
+    accessorKey: 'amount',
+    sortable: true,
+    cell: (order) => (
+      <span className="text-sm font-medium">
+        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(order.amount)}
+      </span>
+    )
+  },
+  {
+    header: 'Status',
+    accessorKey: 'status',
+    sortable: true,
+    cell: (order) => {
+      const isPaid = order.status === 'Paid'
+      const isDue = order.status === 'Due'
+      const isCanceled = order.status === 'Canceled'
 
-      {/* Components Section */}
-      <section id="components">
-        <SectionTitle
-          title="Biblioteca de Componentes"
-          description="Componentes disponíveis para treinamento"
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockComponents.map((component) => (
-            <ComponentCard key={component.id} component={component} />
-          ))}
-        </div>
-      </section>
-
-      {/* Code Example */}
-      <section>
-        <SectionTitle
-          title="Exemplo de Código"
-          description="Como criar um componente reutilizável"
-        />
-        <CodeBlock
-          code={exampleCode}
-          language="tsx"
-          title="user-card.tsx"
-        />
-      </section>
-
-      {/* Data Section */}
-      <section id="data">
-        <SectionTitle
-          title="Exibição de Dados"
-          description="Diferentes formas de mostrar dados"
+      return (
+        <Badge
+          variant="outline"
+          className={cn(
+            "border-transparent font-medium",
+            isPaid && "text-green-500 bg-green-500/10",
+            isDue && "text-yellow-500 bg-yellow-500/10",
+            isCanceled && "text-red-500 bg-red-500/10"
+          )}
         >
-          <Button
-            variant={userCardVariant === 'default' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setUserCardVariant('default')}
-          >
-            <Grid3X3 className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={userCardVariant === 'compact' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setUserCardVariant('compact')}
-          >
-            <List className="w-4 h-4" />
-          </Button>
-        </SectionTitle>
+          {order.status}
+        </Badge>
+      )
+    }
+  }
+]
 
-        <div className={userCardVariant === 'default'
-          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-          : "space-y-2 max-w-2xl"
-        }>
-          {mockUsers.map((user) => (
-            <UserCard
-              key={user.id}
-              user={user}
-              variant={userCardVariant}
-            />
-          ))}
-        </div>
-      </section>
+export default function DashboardOverviewPage() {
+  const { stats, recentOrders, chartData } = dashboardData
 
-      {/* Projects Section */}
-      <section>
-        <SectionTitle
-          title="Projetos"
-          description="Cards de projeto com barra de progresso"
-        />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockProjects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              onSelect={(p) => alert(`Selecionado: ${p.title}`)}
-            />
-          ))}
-        </div>
-      </section>
+  return (
+    <div className="space-y-6">
+      {/* 1. Topo (Grid 4 colunas) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <StatCard key={stat.id} stat={stat} />
+        ))}
+      </div>
 
-      {/* Table Section */}
-      <section id="forms">
-        <SectionTitle
-          title="Tabela de Dados"
-          description="Tabela com busca e ordenação"
-        />
-        <DataTable data={mockUsers} />
-      </section>
+      {/* 2. Meio (Grid 12 colunas) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      {/* Layouts Section */}
-      <section id="layouts">
-        <SectionTitle
-          title="Padrões de Layout"
-          description="Exemplos de estruturas de layout"
-        />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Bento Grid Example */}
-          <div className="p-6 rounded-xl border border-border bg-card">
-            <h3 className="font-semibold text-foreground mb-4">Bento Grid</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 h-24 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground">
-                Header
-              </div>
-              <div className="h-32 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground">
-                Card 1
-              </div>
-              <div className="h-32 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground">
-                Card 2
-              </div>
-              <div className="col-span-2 h-20 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground">
-                Footer
-              </div>
-            </div>
-          </div>
+        {/* Lado Esquerdo (col-span-8): Gráfico de Área */}
+        <Card className="lg:col-span-8">
+          <CardHeader>
+            <CardTitle>Histórico de Vendas</CardTitle>
+            <CardDescription>Acompanhamento mensal de vendas e visitantes</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer
+              config={{
+                sales: {
+                  label: "Vendas",
+                  color: "hsl(var(--primary))",
+                },
+                visitors: {
+                  label: "Visitantes",
+                  color: "hsl(var(--muted-foreground))",
+                },
+              }}
+              className="h-[300px] w-full"
+            >
+              <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-sales)" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="var(--color-sales)" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-visitors)" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="var(--color-visitors)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tickMargin={8} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Area type="monotone" dataKey="visitors" stroke="var(--color-visitors)" fillOpacity={1} fill="url(#colorVisitors)" />
+                <Area type="monotone" dataKey="sales" stroke="var(--color-sales)" fillOpacity={1} fill="url(#colorSales)" />
+              </AreaChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
 
-          {/* Sidebar Layout Example */}
-          <div className="p-6 rounded-xl border border-border bg-card">
-            <h3 className="font-semibold text-foreground mb-4">Sidebar Layout</h3>
-            <div className="flex gap-3 h-48">
-              <div className="w-16 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground text-xs">
-                Nav
-              </div>
-              <div className="flex-1 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground">
-                Content
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        {/* Lado Direito (col-span-4): Support Tracker */}
+        <Card className="lg:col-span-4 flex flex-col">
+          <CardHeader>
+            <CardTitle>Support Tracker</CardTitle>
+            <CardDescription>Resolução de tickets (últimos 7 dias)</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 flex items-center justify-center">
+            <ChartContainer
+              config={{
+                completed: {
+                  label: "Concluídos",
+                  color: "hsl(var(--primary))",
+                }
+              }}
+              className="h-[250px] w-full aspect-square"
+            >
+              <RadialBarChart
+                cx="50%"
+                cy="50%"
+                innerRadius="60%"
+                outerRadius="100%"
+                barSize={20}
+                data={[{ name: "Concluídos", value: 85, fill: "var(--color-completed)" }]}
+                startAngle={90}
+                endAngle={-270}
+              >
+                <PolarAngleAxis
+                  type="number"
+                  domain={[0, 100]}
+                  angleAxisId={0}
+                  tick={false}
+                />
+                <RadialBar
+                  background={{ fill: "hsl(var(--muted))" }}
+                  dataKey="value"
+                  cornerRadius={10}
+                />
+                {/* Custom text inside radial */}
+                <text
+                  x="50%"
+                  y="50%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="fill-foreground font-bold text-3xl"
+                >
+                  85%
+                </text>
+                <text
+                  x="50%"
+                  y="62%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="fill-muted-foreground text-sm"
+                >
+                  Resolvidos
+                </text>
+              </RadialBarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Tips */}
-      <section className="pb-8">
-        <div className="p-6 rounded-xl border border-primary/30 bg-primary/5">
-          <h3 className="font-semibold text-foreground mb-2">Dicas de Componentização</h3>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>1. Sempre defina tipos/interfaces para props</li>
-            <li>2. Use valores default para props opcionais</li>
-            <li>3. Separe lógica de apresentação</li>
-            <li>4. Mantenha componentes pequenos e focados</li>
-            <li>5. Reutilize estilos com o cn() utility</li>
-          </ul>
-        </div>
-      </section>
-
+      {/* 3. Base (col-span-12): Tabela de Pedidos */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Pedidos Recentes</CardTitle>
+          <CardDescription>Gerencie as últimas vendas da plataforma</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            columns={orderColumns}
+            data={recentOrders}
+            searchKey="customer"
+            className="border-none shadow-none"
+          />
+        </CardContent>
+      </Card>
     </div>
   )
 }
